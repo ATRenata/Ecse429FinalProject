@@ -1,0 +1,24 @@
+Original at line 6
+		int w = var1 - var2;
+Mutants:
+		int w = var1 + var2;
+		int w = var1 * var2;
+		int w = var1 / var2;
+Original at line 7
+		int q = 1 + w;
+Mutants:
+		int q = 1 - w;
+		int q = 1 * w;
+		int q = 1 / w;
+Original at line 8
+		int var = q - 3;
+Mutants:
+		int var = q + 3;
+		int var = q * 3;
+		int var = q / 3;
+
+
+Total mutants for + is 2
+Total mutants for - is 1
+Total mutants for * is 3
+Total mutants for / is 3

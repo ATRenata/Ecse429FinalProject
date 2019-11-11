@@ -1,0 +1,5 @@
+#!/bin/bash
+
+#copy MutationTesting
+cp -rf C:\Users\Renata\eclipse-workspace\FinalProject_29\src\main\java\FinalProject_29/MathDummy.java C:\Users\Renata\eclipse-workspace\FinalProject_29\src\main\java\FinalProject_29/SUT.java
+sed -i -e 's/MathDummy/SUT/g' C:\Users\Renata\eclipse-workspace\FinalProject_29\src\main\java\FinalProject_29/SUT.java
