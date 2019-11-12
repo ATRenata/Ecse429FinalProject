@@ -1,12 +1,12 @@
 Original at line 6
-		int w = var1 - var2;
+		int w = 1 + 1;
 Mutants:
-		int w = var1 + var2;
-		int w = var1 * var2;
-		int w = var1 / var2;
+		int w = 1 - 1;
+		int w = 1 * 1;
+		int w = 1 / 1;
 
 
-Total mutants for + is 1
-Total mutants for - is 0
+Total mutants for + is 0
+Total mutants for - is 1
 Total mutants for * is 1
 Total mutants for / is 1

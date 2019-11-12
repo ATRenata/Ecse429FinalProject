@@ -14,12 +14,14 @@ public class MutInject {
 	
 public static void main(String[] args) throws IOException {
 	
+	String pathToSourceFiles = "C:\\\\Users\\\\Renata\\\\eclipse-workspace\\\\FinalProject_29\\\\src\\\\main\\\\java\\\\FinalProject_29\\\\" ;
+	String pathToPackage = "C:\\\\Users\\\\Renata\\\\eclipse-workspace\\\\FinalProject_29/";
 	// create a copy of a file
 	
 	ProcessBuilder processBuilder = new ProcessBuilder();
 
     processBuilder.command("cmd.exe", "/c", "bash", "mutInjection.sh");
-    processBuilder.directory(new File("C:\\Users\\Renata\\eclipse-workspace\\FinalProject_29\\src\\main\\java\\FinalProject_29"));
+    processBuilder.directory(new File(pathToSourceFiles));
 
 
 
@@ -38,11 +40,18 @@ public static void main(String[] args) throws IOException {
     ProcessBuilder processCompile = new ProcessBuilder();
     ProcessBuilder processPitest = new ProcessBuilder();
     //compile 
+    //windows
     processCompile.command("cmd.exe", "/c", "javac", "SUT.java");
-    processCompile.directory(new File("C:\\Users\\Renata\\eclipse-workspace\\FinalProject_29\\src\\main\\java\\FinalProject_29"));
+    //linux
+//    processCompile.command("bash", "-c", "javac", "SUT.java");
+    processCompile.directory(new File(pathToSourceFiles));
+    
     //run pitest
+    //windows
     processPitest.command("cmd.exe", "/c", "gradle", "build","pitest");
-    processPitest.directory(new File("C:\\Users\\Renata\\eclipse-workspace\\FinalProject_29"));
+    //linux
+//    processPitest.command("bash", "-c", "gradle", "build","pitest");
+    processPitest.directory(new File(pathToPackage));
 
     
 
@@ -51,7 +60,7 @@ public static void main(String[] args) throws IOException {
 	try {
 		// open and read mutant file 
 		// Please change file path here
-		File mutFile = new File("C:\\\\Users\\\\Renata\\\\eclipse-workspace\\\\FinalProject_29\\\\src\\\\main\\\\java\\\\FinalProject_29/mutants.txt");
+		File mutFile = new File(pathToSourceFiles+"mutants.txt");
 		FileReader mutR = new FileReader(mutFile);
 		BufferedReader bufR = new BufferedReader(mutR);
 		
@@ -71,7 +80,7 @@ public static void main(String[] args) throws IOException {
 				//iterate 3 times to pass through each mutant
 				for (int i = 0; i < 3; i++) {
 				  // input the (modified) file content to the StringBuffer "input"
-		        BufferedReader file = new BufferedReader(new FileReader("C:\\\\Users\\\\Renata\\\\eclipse-workspace\\\\FinalProject_29\\\\src\\\\main\\\\java\\\\FinalProject_29/SUT.java"));
+		        BufferedReader file = new BufferedReader(new FileReader(pathToSourceFiles+"SUT.java"));
 		        StringBuffer inputBuffer = new StringBuffer();
 		        String line;
 
@@ -82,7 +91,7 @@ public static void main(String[] args) throws IOException {
 			        	//replace the line a.k.a mutant injection  
 			        	if (line.contains(originalLine)) {
 			        		 line = mut1;
-			        	}else if(line.contains(mut1)) {
+			        	}else 	if(line.contains(mut1)) {
 			        		line = mut2;
 			        	}else if (line.contains(mut2)) {
 			        		line = mut3;
@@ -94,14 +103,14 @@ public static void main(String[] args) throws IOException {
 				
 	            file.close();
 				  // write the new string with the replaced line OVER the same file
-		        FileOutputStream fileOut = new FileOutputStream("C:\\Users\\Renata\\eclipse-workspace\\FinalProject_29\\src\\main\\java\\FinalProject_29/SUT.java");
+		        FileOutputStream fileOut = new FileOutputStream(pathToSourceFiles+"SUT.java");
 		        fileOut.write(inputBuffer.toString().getBytes());
 		        fileOut.close();
 		        
 		        //actually run the pitest
 		        try {
 		            Process pComp = processCompile.start();
-		            int exit = pComp.waitFor();
+//		            int exit = pComp.waitFor();
 		            
 		            Process pPitest = processPitest.start();
 		            int ex = pPitest.waitFor();

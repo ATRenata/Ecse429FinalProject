@@ -9,6 +9,7 @@ buildscript {
     }
     dependencies {
         classpath 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.3.0'
+        
     }
 }
 
@@ -26,8 +27,7 @@ dependencies {
 apply plugin: 'info.solidsoft.pitest'
 
 pitest {
-	targetClasses = ["SUT.class"]
-	threads = 4
+	targetClasses = ["FinalProject_29.SU*"]
     outputFormats = ['CSV', 'HTML']
     timestampedReports = true
 }

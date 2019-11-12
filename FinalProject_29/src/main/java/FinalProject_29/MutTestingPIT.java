@@ -8,8 +8,10 @@ import java.io.FileWriter;
 
 public class MutTestingPIT {
 	
+	static String pathSourceDir = "C:\\\\Users\\\\Renata\\\\eclipse-workspace\\\\FinalProject_29\\\\src\\\\main\\\\java\\\\FinalProject_29\\\\" ;
+
 	public static void main(String[] args) throws IOException {
-		FileWriter fw=new FileWriter("C:\\Users\\Renata\\eclipse-workspace\\FinalProject_29\\src\\main\\java\\FinalProject_29/mutants.txt");   
+		FileWriter fw=new FileWriter(pathSourceDir+"mutants.txt");   
 		BufferedReader reader;
 		int lineNumber = 0;
 		char[] mathOper = {'+','-','*','/'};
@@ -17,7 +19,7 @@ public class MutTestingPIT {
 		try {
 			reader = new BufferedReader(new FileReader(
 					//Please change the directory of your test file here
-					"C:\\Users\\Renata\\eclipse-workspace\\FinalProject_29\\src\\main\\java\\FinalProject_29/MathDummy.java"));
+					pathSourceDir+"MathDummy.java"));
 			String line = reader.readLine();
 			while (line != null) {
 				for(int i = 0; i < mathOper.length; i++) {
