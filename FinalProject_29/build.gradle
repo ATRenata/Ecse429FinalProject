@@ -27,7 +27,8 @@ dependencies {
 apply plugin: 'info.solidsoft.pitest'
 
 pitest {
-	targetClasses = ["FinalProject_29.SU*"]
+	targetClasses = ["FinalProject_29*"]
     outputFormats = ['CSV', 'HTML']
     timestampedReports = true
+  
 }

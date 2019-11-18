@@ -1,4 +1,4 @@
-package FinalProject_29;
+
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -8,7 +8,7 @@ import java.io.FileWriter;
 
 public class MutTestingPIT {
 	
-	static String pathSourceDir = "C:\\\\Users\\\\Renata\\\\eclipse-workspace\\\\FinalProject_29\\\\src\\\\main\\\\java\\\\FinalProject_29\\\\" ;
+	static String pathSourceDir = "/Users/shiqiaozhu/eclipse-workspace/FinalProject_29/src/main/java/FinalProject_29/" ;
 
 	public static void main(String[] args) throws IOException {
 		FileWriter fw=new FileWriter(pathSourceDir+"mutants.txt");   

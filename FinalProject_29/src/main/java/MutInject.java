@@ -1,4 +1,4 @@
-package FinalProject_29;
+
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,14 +13,14 @@ public class MutInject {
 	
 	
 public static void main(String[] args) throws IOException {
-	
-	String pathToSourceFiles = "C:\\\\Users\\\\Renata\\\\eclipse-workspace\\\\FinalProject_29\\\\src\\\\main\\\\java\\\\FinalProject_29\\\\" ;
-	String pathToPackage = "C:\\\\Users\\\\Renata\\\\eclipse-workspace\\\\FinalProject_29/";
+
+	String pathToSourceFiles = "/Users/shiqiaozhu/eclipse-workspace/FinalProject_29/src/main/java/FinalProject_29/" ;
+	String pathToPackage = "/Users/shiqiaozhu/eclipse-workspace/FinalProject_29";
 	// create a copy of a file
 	
 	ProcessBuilder processBuilder = new ProcessBuilder();
 
-    processBuilder.command("cmd.exe", "/c", "bash", "mutInjection.sh");
+    processBuilder.command("bash", "-c", "bash", "mutInjection.sh");
     processBuilder.directory(new File(pathToSourceFiles));
 
 
@@ -41,16 +41,16 @@ public static void main(String[] args) throws IOException {
     ProcessBuilder processPitest = new ProcessBuilder();
     //compile 
     //windows
-    processCompile.command("cmd.exe", "/c", "javac", "SUT.java");
+    //processCompile.command("cmd.exe", "/c", "javac", "SUT.java");
     //linux
-//    processCompile.command("bash", "-c", "javac", "SUT.java");
+    processCompile.command("bash", "-c", "javac", "SUT.java");
     processCompile.directory(new File(pathToSourceFiles));
     
     //run pitest
     //windows
-    processPitest.command("cmd.exe", "/c", "gradle", "build","pitest");
+    //processPitest.command("cmd.exe", "/c", "gradle", "build","pitest");
     //linux
-//    processPitest.command("bash", "-c", "gradle", "build","pitest");
+    processPitest.command("bash", "-c", "gradle", "build","pitest");
     processPitest.directory(new File(pathToPackage));
 
     
