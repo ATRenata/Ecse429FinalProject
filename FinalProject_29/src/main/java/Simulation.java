@@ -1,6 +1,7 @@
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.KeyPair;
 import java.util.*;
 import java.util.UUID;
 
@@ -9,11 +10,10 @@ public class Simulation{
     static char[] ops = new char[]{'+','-','*','/'};
     static int[] mutant_type;
     static String mutant_info = "src/main/java/mutants2.txt";
-    static String mutant_info_new = "src/main/java/mutants_new.txt";
     static String SUT_files = "src/main/java/SUT_files";
     static String my_program = "src/main/java/sample_program.java";
 
-
+    static int[][] input_vectors = new int[][]{{0,4},{100,5},{42,67}};
 
     public static void main(String[] args) throws Exception {
         //first part
@@ -23,36 +23,47 @@ public class Simulation{
         System.out.println("Generating SUTs...");
         assignment2_q4();
 
-
-        ReturnValues r = Helper.runProcess("sampleprogram", "java "+my_program);
-
-        final File folder = new File(SUT_files);
+        Map<String,String> killedMutantIDs;
         List<String> result = new ArrayList<>();
+        final File folder = new File(SUT_files);
         search(".*\\.java", folder, result);
+        Files.createDirectories(Paths.get("src/main/java/Updated_mutants"));
 
-        ArrayList<String> killedMutantIDs = new ArrayList<>();
-
-        //sequential
         System.out.println("Start sequential simulation...");
         long seq_start = System.currentTimeMillis();
-        for (String s : result) {
-            File text = new File(s);
-            Scanner scnr = new Scanner(text);
-            String ID = scnr.nextLine().substring(2);
-            ReturnValues mutant_return =  Helper.runProcess(ID,"java "+s);
-            if(r.output.equals(mutant_return.output)
-                    && r.error_message.equals(mutant_return.error_message)
-                    && r.exit_value == mutant_return.exit_value){
-                System.out.println("survive mutant "+s);
+        for(int ctr = 0; ctr < input_vectors.length; ctr++){
+            System.out.println("Start testing input vector ["+input_vectors[ctr][0]+","+input_vectors[ctr][1]+"]");
+            ReturnValues r = Helper.runProcess("sampleprogram", "java "+my_program+" "+input_vectors[ctr][0]+" "+input_vectors[ctr][1]);
+            //sequential
+            killedMutantIDs = new HashMap<>();
+            for (String s : result) {
+                File text = new File(s);
+                Scanner scnr = new Scanner(text);
+                String ID = scnr.nextLine().substring(2);
+                ReturnValues mutant_return =  Helper.runProcess(ID,"java "+s+" "+input_vectors[ctr][0]+" "+input_vectors[ctr][1]);
+                //System.out.println(r.output+ " "+ mutant_return.output);
+                if(r.output.equals(mutant_return.output)){
+                        //&& r.error_message != null && r.error_message.equals(mutant_return.error_message)
+                        //&& r.exit_value == mutant_return.exit_value){
+                    System.out.println("survive mutant "+mutant_return.id);
+                }
+                else{
+                    System.out.println("kill mutant "+mutant_return.id);
+                    killedMutantIDs.put(mutant_return.id,"killed by ["+input_vectors[ctr][0]+","+input_vectors[ctr][1]+"]");
+                }
             }
-            else{
-                System.out.println("kill mutant "+mutant_return.id);
-                killedMutantIDs.add(mutant_return.id);
-            }
+            updated_mutant_file(killedMutantIDs,"mutantlist_sequential_input_"+input_vectors[ctr][0]+"_"+input_vectors[ctr][1]+".txt");
+
         }
         System.out.println("Sequential simulation takes "+(System.currentTimeMillis()-seq_start)+" ms");
 
 
+
+
+
+
+        System.out.println("Start parallel simulation...");
+        long par_start = System.currentTimeMillis();
         ArrayList<ArrayList<String>> files = new ArrayList<>(3);
         for (int i=0; i<3; i++)
         {
@@ -65,33 +76,36 @@ public class Simulation{
             filecounter = filecounter%3;
         }
 
-        System.out.println("Start parallel simulation...");
-        long par_start = System.currentTimeMillis();
-        MyThread[] threads = new MyThread[3];
-        for (int i=0; i<3; i++)
-        {
-            threads[i]= new MyThread(files.get(i), r);
-            threads[i].start();
-        }
+        for(int ctr = 0; ctr < input_vectors.length; ctr++){
+            System.out.println("Start testing input vector ["+input_vectors[ctr][0]+","+input_vectors[ctr][1]+"]");
+            ReturnValues r = Helper.runProcess("sampleprogram", "java "+my_program+" "+input_vectors[ctr][0]+" "+input_vectors[ctr][1]);
+            MyThread[] threads = new MyThread[3];
+            for (int i=0; i<3; i++)
+            {
+                threads[i]= new MyThread(files.get(i), r, input_vectors[ctr][0], input_vectors[ctr][1]);
+                threads[i].start();
+            }
+            killedMutantIDs = new HashMap<>();
+            for (int i=0; i<3; i++){
+                threads[i].join();
+                Map<String, String> temp = threads[i].getKilledIDs();
+                for(Map.Entry<String,String> entry: temp.entrySet()){
+                    killedMutantIDs.put(entry.getKey(),entry.getValue());
+                }
+            }
+            updated_mutant_file(killedMutantIDs,"mutantlist_parallel_input_"+input_vectors[ctr][0]+"_"+input_vectors[ctr][1]+".txt");
 
-        killedMutantIDs = new ArrayList<>();
-        for (int i=0; i<3; i++){
-            threads[i].join();
-            killedMutantIDs.addAll(threads[i].getKilledIDs());
         }
-
         System.out.println("Parallel simulation takes "+(System.currentTimeMillis()-par_start)+" ms");
-
-        updated_mutant_file(killedMutantIDs);
 
 
     }
 
 
-    private static void updated_mutant_file(ArrayList<String> killedMutantIDs) throws IOException {
+    private static void updated_mutant_file(Map<String, String> killedMutantIDs, String filename) throws IOException {
         File mutant_list = new File(mutant_info);
         Scanner sc = new Scanner(mutant_list);
-        writer = new PrintWriter(mutant_info_new);
+        writer = new PrintWriter("src/main/java/Updated_mutants/"+filename);
         while (sc.hasNextLine()){
             String l1 = sc.nextLine();
             if(!l1.substring(0,3).equals("ID:")) {
@@ -99,8 +113,8 @@ public class Simulation{
                 continue;
             }
             String id = l1.substring(3);
-            if(killedMutantIDs.contains(id)) {
-                writer.println(l1 + " (killed)");
+            if(killedMutantIDs.containsKey(id)) {
+                writer.println(l1 + "("+killedMutantIDs.get(id)+")");
             }
             else{
                 writer.println(l1 + " (survived)");
@@ -266,17 +280,22 @@ class MyThread extends Thread{
     ReturnValues original_return;
     ArrayList<String> SUTs;
     long threadID = -1;
+    int input1;
+    int input2;
 
-    ArrayList<String> killedMutantIDs;
+    Map<String, String> killedMutantIDs;
 
 
-    public MyThread(ArrayList<String> filenames, ReturnValues original_return){
+    public MyThread(ArrayList<String> filenames, ReturnValues original_return, int input1, int input2){
         this.SUTs = filenames;
         this.original_return = original_return;
-        killedMutantIDs = new ArrayList<>();
+        killedMutantIDs = new HashMap<>();
+        this.input1 = input1;
+        this.input2 = input2;
+
     }
 
-    public ArrayList<String> getKilledIDs(){
+    public Map<String, String> getKilledIDs(){
         return killedMutantIDs;
     }
 
@@ -290,15 +309,15 @@ class MyThread extends Thread{
                 File text = new File(sut);
                 Scanner scnr = new Scanner(text);
                 String ID = scnr.nextLine().substring(2);
-                ReturnValues mutant_return =  Helper.runProcess(ID,"java "+sut);
-                if(original_return.output.equals(mutant_return.output)
-                && original_return.error_message.equals(mutant_return.error_message)
-                && original_return.exit_value == mutant_return.exit_value){
-                    System.out.println("survive mutant "+sut);
+                ReturnValues mutant_return =  Helper.runProcess(ID,"java "+sut+" "+input1+" "+input2);
+                if(original_return.output.equals(mutant_return.output)){
+                //&& original_return.error_message.equals(mutant_return.error_message)
+                //&& original_return.exit_value == mutant_return.exit_value){
+                    System.out.println("survive mutant "+mutant_return.id);
                 }
                 else{
                     System.out.println("kill mutant "+mutant_return.id);
-                    killedMutantIDs.add(mutant_return.id);
+                    killedMutantIDs.put(mutant_return.id,"killed by ["+input1+","+input2+"]");
                 }
 
             }
